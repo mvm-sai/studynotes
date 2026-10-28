@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Notes</title>
+<style>
+  :root {
+    --bg: #f5f7fb; --card: #ffffff; --text: #1c2333; --muted: #6b7280;
+    --accent: #4f46e5; --accent-soft: #eef0ff; --border: #e5e7eb;
+    --shadow: 0 4px 14px rgba(20, 30, 60, 0.07);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1420; --card: #181f31; --text: #e8ecf5; --muted: #98a2b8;
+    --accent: #8b93ff; --accent-soft: #232b45; --border: #2a3350;
+    --shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55;
+  }
+  button { font: inherit; cursor: pointer; }
+  .hidden { display: none !important; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+  /* ---------- Home ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-icon {
+    width: 42px; height: 42px; border-radius: 12px; background: var(--accent);
+    color: #fff; display: grid; place-items: center; font-size: 22px;
+  }
+  .brand h1 { font-size: 1.3rem; margin: 0; }
+  .brand small { color: var(--muted); display: block; margin-top: -2px; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: 18px;
+  }
+  .search {
+    width: 100%; padding: 13px 16px; border-radius: 14px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: 1rem; margin: 12px 0;
+    outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  .search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .progress-box { margin: 4px 0 16px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: .85rem; color: var(--muted); margin-bottom: 6px; }
+  .progress-track { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .5s ease; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 560px) { .grid { grid-template-columns: 1fr 1fr; } }
+  .chapter-card {
+    text-align: left; background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 18px; padding: 16px; display: flex; gap: 14px; align-items: center;
+    box-shadow: var(--shadow); transition: transform .15s ease;
+  }
+  .chapter-card:active { transform: scale(.98); }
+  .chapter-num {
+    min-width: 48px; height: 48px; border-radius: 14px; background: var(--accent-soft);
+    color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 1.15rem;
+  }
+  .chapter-card h3 { margin: 0 0 2px; font-size: 1.02rem; }
+  .chapter-card p { margin: 0; color: var(--muted); font-size: .88rem; }
+  .read-tick { margin-left: auto; color: var(--accent); font-size: 18px; }
+  .empty-search { text-align: center; color: var(--muted); padding: 30px 0; }
+  footer { text-align: center; color: var(--muted); font-size: .82rem; padding: 26px 0 10px; }
+
+  /* ---------- Chapter page ---------- */
+  .back-btn {
+    border: none; background: var(--accent-soft); color: var(--accent);
+    padding: 9px 14px; border-radius: 12px; font-weight: 600; margin-bottom: 14px;
+  }
+  .chapter-head h2 { margin: 6px 0 4px; font-size: 1.5rem; }
+  .chapter-head .tag { color: var(--accent); font-weight: 600; font-size: .9rem; }
+  .section-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin: 14px 0; }
+  .section-box h3 { margin: 0 0 8px; }
+  .section-box h4 { margin: 14px 0 6px; color: var(--accent); }
+  .section-box ul { padding-left: 20px; margin: 6px 0; }
+  .definition { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 12px; border-radius: 8px; margin: 8px 0; }
+  .formula { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--accent-soft); padding: 10px 12px; border-radius: 8px; margin: 8px 0; overflow-x: auto; }
+  .exam { border: 2px dashed var(--accent); }
+  .pager { display: flex; gap: 10px; margin: 18px 0; }
+  .pager button {
+    flex: 1; padding: 13px; border-radius: 14px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-weight: 600;
+  }
+  .pager button:disabled { opacity: .4; }
+  .home-btn { width: 100%; padding: 13px; border: none; border-radius: 14px; background: var(--accent); color: #fff; font-weight: 700; }
+
+  /* ---------- Chat (always dark) ---------- */
+  #chatView {
+    position: fixed; inset: 0; background: #000; color: #f3f4f6;
+    display: flex; flex-direction: column; height: 100dvh;
+  }
+  .chat-header { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #262626; background: #0a0a0a; }
+  .chat-back { background: none; border: none; color: #f3f4f6; font-size: 24px; padding: 4px 8px; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; color: #fff; background: linear-gradient(135deg, #7c3aed, #ec4899); flex-shrink: 0;
+  }
+  .chat-title { font-weight: 700; line-height: 1.2; }
+  .chat-status { font-size: .78rem; color: #a3a3a3; }
+  .chat-status.warn { color: #fbbf24; }
+  .chat-body { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .chat-empty { margin: auto; text-align: center; color: #a3a3a3; padding: 20px; }
+  .chat-empty .avatar { width: 72px; height: 72px; font-size: 1.8rem; margin: 0 auto 12px; }
+  .msg-row { display: flex; gap: 8px; align-items: flex-end; }
+  .msg-row.sent { justify-content: flex-end; }
+  .bubble { max-width: 78%; padding: 9px 13px; border-radius: 20px; word-wrap: break-word; white-space: pre-wrap; }
+  .sent .bubble { background: #3b5bfd; color: #fff; border-bottom-right-radius: 6px; }
+  .received .bubble { background: #262626; color: #f3f4f6; border-bottom-left-radius: 6px; }
+  .meta { font-size: .68rem; color: #8a8a8a; margin-top: 2px; }
+  .chat-input-bar { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #262626; background: #0a0a0a; }
+  .chat-input-bar input {
+    flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid #333;
+    background: #1a1a1a; color: #fff; font-size: 1rem; outline: none;
+  }
+  .chat-input-bar button { border: none; background: none; color: #6d83ff; font-weight: 700; font-size: 1rem; padding: 0 10px; }
+  .toast {
+    position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%);
+    background: #fbbf24; color: #1f1f1f; padding: 10px 16px; border-radius: 12px;
+    font-size: .88rem; max-width: 90%; text-align: center; z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= HOME ================= -->
+<div id="homeView" class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">📚</div>
+      <div><h1>Study Notes</h1><small>Learn a little every day</small></div>
+    </div>
+    <button class="icon-btn" id="themeBtn" aria-label="Change theme">🌓</button>
+  </div>
+
+  <input class="search" id="searchBox" type="search" placeholder="Search chapters...">
+
+  <div class="progress-box">
+    <div class="progress-label"><span>Your progress</span><span id="progressText">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="grid" id="chapterGrid"></div>
+  <div class="empty-search hidden" id="emptySearch">No chapters found.</div>
+
+  <footer>© Study Notes · Placeholder content for practice</footer>
+</div>
+
+<!-- ================= CHAPTER PAGE ================= -->
+<div id="chapterView" class="wrap hidden"></div>
+
+<!-- ================= CHAT SCREEN ================= -->
+<div id="chatView" class="hidden">
+  <div class="chat-header">
+    <button class="chat-back" id="chatBack" aria-label="Back">‹</button>
+    <div class="avatar" id="chatAvatar">F</div>
+    <div>
+      <div class="chat-title">Friend</div>
+      <div class="chat-status warn" id="chatStatus">Preview only · not connected yet</div>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-empty">
+      <div class="avatar">F</div>
+      <div><strong>No messages yet</strong></div>
+      <div>Messages will appear here after we connect the database.</div>
+    </div>
+  </div>
+  <div class="chat-input-bar">
+    <input id="chatInput" type="text" maxlength="500" placeholder="Message..." autocomplete="off">
+    <button id="chatSend">Send</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   EDIT YOUR NOTES HERE
+   1) CHAPTERS: change the title and description of each chapter.
+   2) CHAPTER_CONTENT: add real notes for a chapter number.
+      Any chapter you do not add here shows placeholder notes.
+   ===================================================================== */
+const CHAPTERS = [
+  { title: "Introduction and Basics",  desc: "Key ideas to start the subject." },
+  { title: "Core Concepts",            desc: "The main ideas explained simply." },
+  { title: "Terms and Definitions",    desc: "Important words you must know." },
+  { title: "Fundamental Principles",   desc: "The rules behind everything else." },
+  { title: "Methods and Techniques",   desc: "Step-by-step ways to work." },
+  { title: "Worked Examples",          desc: "Solved examples to learn from." },
+  { title: "Applications",             desc: "How the ideas are used in practice." },
+  { title: "Common Problems",          desc: "Mistakes to avoid and how to fix them." },
+  { title: "Analysis Skills",          desc: "Break problems into smaller parts." },
+  { title: "Case Studies",             desc: "Real-style situations to study." },
+  { title: "Advanced Topics",          desc: "Go deeper once the basics are clear." },
+  { title: "Problem Solving",          desc: "Practice approaches and shortcuts." },
+  { title: "Exam Strategies",          desc: "Plan your time and answers." },
+  { title: "Quick Revision",           desc: "A fast summary before the exam." },
+  { title: "Practice and Review",      desc: "Final review and self-check." }
+];
+
+/* Example of real notes (remove the slashes to try it):
+const CHAPTER_CONTENT = {
+  1: {
+    intro: "This chapter introduces...",
+    sections: [
+      { heading: "First topic", paragraphs: ["Some text."], bullets: ["Point A", "Point B"] }
+    ],
+    definitions: [ { term: "Word", meaning: "What it means." } ],
+    formulas: [ "a + b = c" ],
+    examPoints: ["Remember this for the exam."]
+  }
+};
+*/
+const CHAPTER_CONTENT = {};
+
+/* The private chapter. Do not change this number unless you want a different card to open the chat. */
+const CHAT_CHAPTER = 15;
+const NOTES_COUNT = 14;
+
+/* ---------------- Helpers ---------------- */
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;   // textContent = plain text only (safe)
+  return node;
+}
+function getReadList() {
+  try { return JSON.parse(localStorage.getItem("sn_read") || "[]"); } catch (e) { return []; }
+}
+function markRead(n) {
+  if (n > NOTES_COUNT) return;
+  const list = getReadList();
+  if (!list.includes(n)) {
+    list.push(n);
+    try { localStorage.setItem("sn_read", JSON.stringify(list)); } catch (e) {}
+  }
+}
+function defaultContent(n, title) {
+  return {
+    intro: "This is placeholder text for Chapter " + n + " (" + title + "). Replace it with your real notes.",
+    sections: [
+      { heading: "Main Topic", paragraphs: ["Write the explanation of the main topic here."], bullets: ["Key point one", "Key point two", "Key point three"] },
+      { heading: "Second Topic", paragraphs: ["Write another explanation here."], bullets: ["Another point", "One more point"] }
+    ],
+    definitions: [{ term: "Sample term", meaning: "Write the meaning of an important term here." }],
+    formulas: ["Sample formula: x = y + z"],
+    examPoints: ["Write an important exam point here.", "Write a common exam question here."]
+  };
+}
+
+/* ---------------- Theme ---------------- */
+function applyTheme(theme) { document.documentElement.setAttribute("data-theme", theme); }
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem("sn_theme"); } catch (e) {}
+  const dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(saved || (dark ? "dark" : "light"));
+})();
+document.getElementById("themeBtn").addEventListener("click", function () {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem("sn_theme", next); } catch (e) {}
+});
+
+/* ---------------- Home ---------------- */
+function renderHome(filter) {
+  const grid = document.getElementById("chapterGrid");
+  grid.textContent = "";
+  const query = (filter || "").trim().toLowerCase();
+  const readList = getReadList();
+  let shown = 0;
+
+  CHAPTERS.forEach(function (chapter, index) {
+    const n = index + 1;
+    const searchable = (n + " chapter " + chapter.title + " " + chapter.desc).toLowerCase();
+    if (query && !searchable.includes(query)) return;
+    shown++;
+
+    const card = el("button", "chapter-card");
+    card.appendChild(el("div", "chapter-num", String(n)));
+    const info = el("div");
+    info.appendChild(el("h3", "", chapter.title));
+    info.appendChild(el("p", "", chapter.desc));
+    card.appendChild(info);
+    if (readList.includes(n)) card.appendChild(el("span", "read-tick", "✓"));
+    card.addEventListener("click", function () {
+      location.hash = (n === CHAT_CHAPTER) ? "#/c15" : "#/chapter/" + n;
+    });
+    grid.appendChild(card);
+  });
+
+  document.getElementById("emptySearch").classList.toggle("hidden", shown > 0);
+  const percent = Math.round((readList.length / NOTES_COUNT) * 100);
+  document.getElementById("progressText").textContent = percent + "%";
+  document.getElementById("progressFill").style.width = percent + "%";
+}
+document.getElementById("searchBox").addEventListener("input", function (e) { renderHome(e.target.value); });
+
+/* ---------------- Chapter page ---------------- */
+function renderChapter(n) {
+  const view = document.getElementById("chapterView");
+  view.textContent = "";
+  const chapter = CHAPTERS[n - 1];
+  const content = CHAPTER_CONTENT[n] || defaultContent(n, chapter.title);
+  markRead(n);
+
+  const back = el("button", "back-btn", "← Home");
+  back.addEventListener("click", function () { location.hash = "#/"; });
+  view.appendChild(back);
+
+  const head = el("div", "chapter-head");
+  head.appendChild(el("div", "tag", "Chapter " + n));
+  head.appendChild(el("h2", "", chapter.title));
+  view.appendChild(head);
+
+  const intro = el("div", "section-box");
+  intro.appendChild(el("h3", "", "Introduction"));
+  intro.appendChild(el("p", "", content.intro));
+  view.appendChild(intro);
+
+  (content.sections || []).forEach(function (section) {
+    const box = el("div", "section-box");
+    box.appendChild(el("h3", "", section.heading));
+    (section.paragraphs || []).forEach(function (text) { box.appendChild(el("p", "", text)); });
+    if (section.bullets && section.bullets.length) {
+      const list = el("ul");
+      section.bullets.forEach(function (item) { list.appendChild(el("li", "", item)); });
+      box.appendChild(list);
+    }
+    (section.subsections || []).forEach(function (sub) {
+      box.appendChild(el("h4", "", sub.heading));
+      (sub.paragraphs || []).forEach(function (text) { box.appendChild(el("p", "", text)); });
+    });
+    view.appendChild(box);
+  });
+
+  if (content.definitions && content.definitions.length) {
+    const box = el("div", "section-box");
+    box.appendChild(el("h3", "", "Important Definitions"));
+    content.definitions.forEach(function (d) {
+      const row = el("div", "definition");
+      row.appendChild(el("strong", "", d.term + ": "));
+      row.appendChild(document.createTextNode(d.meaning));
+      box.appendChild(row);
+    });
+    view.appendChild(box);
+  }
+
+  if (content.formulas && content.formulas.length) {
+    const box = el("div", "section-box");
+    box.appendChild(el("h3", "", "Formulas"));
+    content.formulas.forEach(function (f) { box.appendChild(el("div", "formula", f)); });
+    view.appendChild(box);
+  }
+
+  if (content.examPoints && content.examPoints.length) {
+    const box = el("div", "section-box exam");
+    box.appendChild(el("h3", "", "⭐ Important Exam Points"));
+    const list = el("ul");
+    content.examPoints.forEach(function (p) { list.appendChild(el("li", "", p)); });
+    box.appendChild(list);
+    view.appendChild(box);
+  }
+
+  const pager = el("div", "pager");
+  const prev = el("button", "", "← Previous");
+  const next = el("button", "", "Next →");
+  prev.disabled = n <= 1;
+  next.disabled = n >= NOTES_COUNT;      // the last notes chapter has no "Next"
+  prev.addEventListener("click", function () { location.hash = "#/chapter/" + (n - 1); });
+  next.addEventListener("click", function () { location.hash = "#/chapter/" + (n + 1); });
+  pager.appendChild(prev);
+  pager.appendChild(next);
+  view.appendChild(pager);
+
+  const home = el("button", "home-btn", "Return to Home");
+  home.addEventListener("click", function () { location.hash = "#/"; });
+  view.appendChild(home);
+  window.scrollTo(0, 0);
+}
+
+/* ---------------- Chat screen (preview only for now) ---------------- */
+let toastTimer = null;
+function showToast(message) {
+  const old = document.getElementById("toast");
+  if (old) old.remove();
+  const toast = el("div", "toast", message);
+  toast.id = "toast";
+  document.body.appendChild(toast);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { toast.remove(); }, 2600);
+}
+function trySend() {
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
+  if (!text) { showToast("Type a message first."); return; }
+  showToast("Not connected yet. Sending will work after Firebase setup.");
+}
+document.getElementById("chatSend").addEventListener("click", trySend);
+document.getElementById("chatInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") { e.preventDefault(); trySend(); }
+});
+document.getElementById("chatBack").addEventListener("click", function () { location.hash = "#/"; });
+
+/* ---------------- Router ---------------- */
+function route() {
+  const hash = location.hash || "#/";
+  const home = document.getElementById("homeView");
+  const chapterView = document.getElementById("chapterView");
+  const chatView = document.getElementById("chatView");
+  home.classList.add("hidden");
+  chapterView.classList.add("hidden");
+  chatView.classList.add("hidden");
+  document.body.style.overflow = "";
+
+  const match = hash.match(/^#\/chapter\/(\d+)$/);
+  if (match && Number(match[1]) >= 1 && Number(match[1]) <= NOTES_COUNT) {
+    renderChapter(Number(match[1]));
+    chapterView.classList.remove("hidden");
+  } else if (hash === "#/c15") {
+    chatView.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  } else {
+    renderHome(document.getElementById("searchBox").value);
+    home.classList.remove("hidden");
+  }
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
